@@ -13,7 +13,7 @@ namespace NFine.XUnitTesting.NFine.Code
         public void Md5Test()
         {
             var result = EncryptProvider.Md5("aaaaa", MD5Length.L16);
-            Assert.Equal(result.Length, 16);
+            Assert.Equal(16, result.Length);
             Console.WriteLine(result);
         }
     }

@@ -29,7 +29,7 @@ namespace NFine.Scheduler
             _logger = loggerFactory.CreateLogger<QuartzStartup>();
             iocJobfactory = new NFineJobFactory(IocContainer);
 
-            #region 设置scheduler创建参数          /
+            #region 设置scheduler创建参数
             var nameValueCollection = new NameValueCollection();
             foreach (var config in Configuration.GetSection("QuartzNet").GetChildren())
                 nameValueCollection.Add(config.Key, config.Value);

@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Extensions;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -19,7 +18,7 @@ namespace NFine.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            //optionsBuilder.UseSqlServer(ConfigurationManager.ConnectionStrings["NFineDbContext"],options=>options.UseRowNumberForPaging());
+            //optionsBuilder.UseSqlServer(ConfigurationManager.ConnectionStrings["NFineDbContext"], options => options.UseRowNumberForPaging());
         }
 
         // public DbSet<UserEntity> UserEntities { get; set; }

@@ -48,18 +48,21 @@ namespace NFine.Web
         {
             return View();
         }
+
         [HttpGet]
        // [HandlerAuthorize]
         public virtual ActionResult Form()
         {
             return View();
         }
+
         [HttpGet]
        // [HandlerAuthorize]
         public virtual ActionResult Details()
         {
             return View();
         }
+
         protected virtual ActionResult Success(string message)
         {
             return Content(new AjaxResult { state = ResultType.success.ToString(), message = message }.ToJson());
@@ -72,9 +75,5 @@ namespace NFine.Web
         {
             return Content(new AjaxResult { state = ResultType.error.ToString(), message = message }.ToJson());
         }
-
-       
-
     }
-
 }

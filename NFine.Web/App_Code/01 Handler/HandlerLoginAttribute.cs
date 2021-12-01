@@ -8,9 +8,8 @@ using System.Web;
 
 namespace NFine.Web
 {
-    public class HandlerLoginAttribute: AuthorizeAttribute
+    public class HandlerLoginAttribute : AuthorizeAttribute
     {
-       
         public HandlerLoginAttribute(bool ignore = true)
         {
             if (OperatorProvider.Provider.GetCurrent() == null)

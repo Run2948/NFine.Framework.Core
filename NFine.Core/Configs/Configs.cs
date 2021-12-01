@@ -14,6 +14,7 @@ namespace NFine.Code
         {
             return ConfigurationManager.AppSettings[key].ToString().Trim();
         }
+
         /// <summary>
         /// 根据Key修改Value
         /// </summary>

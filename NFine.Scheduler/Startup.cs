@@ -1,21 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Quartz.Impl;
-using NFine.Code;
-using Quartz;
 using CrystalQuartz.AspNetCore;
-using Microsoft.Extensions.Logging;
 using System.Reflection;
 using NFine.Data;
+using Microsoft.Extensions.Hosting;
 
 namespace NFine.Scheduler
 {
@@ -38,8 +33,7 @@ namespace NFine.Scheduler
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddControllersWithViews();
 
             #region 注入repositorybase类
             Assembly asm = System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName("NFine.Repository"));
@@ -70,7 +64,7 @@ namespace NFine.Scheduler
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IApplicationLifetime lifetime, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostApplicationLifetime lifetime, IWebHostEnvironment env)
         {
             var quartz = app.ApplicationServices.GetRequiredService<QuartzStartup>();
             lifetime.ApplicationStarted.Register(quartz.Start);
@@ -87,15 +81,14 @@ namespace NFine.Scheduler
 
             app.UseStaticFiles();
             app.UseCookiePolicy();
-            
+
             app.UseCrystalQuartz(() => quartz.Scheduler);
-            app.UseMvc(routes =>
+
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapDefaultControllerRoute();
             });
         }
-        
     }
 }

@@ -5,14 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NFine.Web.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
 using NFine.Domain;
 using NFine.Application.SystemManage;
 using NFine.Code;
 using NFine.Application.SystemSecurity;
 using NFine.Domain.Entity.SystemSecurity;
 using NFine.Application;
+using Microsoft.AspNetCore.Authorization;
 
 namespace NFine.Web.Controllers
 {
@@ -26,7 +25,7 @@ namespace NFine.Web.Controllers
             this.logApp = logApp;
         }
 
-        // [Authorize]
+        [Authorize]
         public override ActionResult Index()
         {
             if (!string.IsNullOrWhiteSpace(HttpContext.Request.Query["ReturnUrl"].ToString()))
@@ -51,10 +50,12 @@ namespace NFine.Web.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        public IActionResult ChangePwd() => View();
+        public IActionResult ChangePwd()
+        {
+            return View();
+        }
 
         [HttpPost]
-        [Authorize]
         public async Task<IActionResult> SubmitPwd(ChangePassWordReuqest query)
         {
             if (string.IsNullOrWhiteSpace(query.F_NewPawword))

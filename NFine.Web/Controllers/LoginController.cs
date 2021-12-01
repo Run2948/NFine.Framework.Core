@@ -16,7 +16,7 @@ namespace NFine.Web.Controllers
     {
         private UserApp userApp;
         private LogApp logApp;
-        public LoginController(UserApp userApp,LogApp logApp)
+        public LoginController(UserApp userApp, LogApp logApp)
         {
             this.userApp = userApp;
             this.logApp = logApp;
@@ -68,7 +68,7 @@ namespace NFine.Web.Controllers
                     {
                         operatorModel.IsSystem = false;
                     }
-                   await  OperatorProvider.Provider.AddCurrent(operatorModel);
+                    await OperatorProvider.Provider.AddCurrent(operatorModel);
                     logEntity.F_Account = userEntity.F_Account;
                     logEntity.F_NickName = userEntity.F_RealName;
                     logEntity.F_Result = true;
@@ -104,20 +104,21 @@ namespace NFine.Web.Controllers
                 F_Result = true,
                 F_Description = "安全退出系统",
             });
-           await OperatorProvider.Provider.RemoveCurrent();
+            await OperatorProvider.Provider.RemoveCurrent();
             return RedirectToAction("Index", "Login");
         }
 
+        [HttpGet]
         public IActionResult GetConfig()
         {
             OperatorModel operatorModel = new OperatorModel();
             var str = EncryptProvider.DESEncrypt(operatorModel.ToJson());
             //WebHelper.WriteSession("nfine_loginuserkey_2016", str);
-           //   HttpContext.Session.TryGetValue("nfine_loginuserkey_2016", out byte[] bytes);
+            //   HttpContext.Session.TryGetValue("nfine_loginuserkey_2016", out byte[] bytes);
 
-           // var encryptString = System.Text.Encoding.UTF8.GetString(bytes);
+            // var encryptString = System.Text.Encoding.UTF8.GetString(bytes);
             var decryptString = EncryptProvider.DESDecrypt(str);
-            return Content("encrypt:  "+str +" \n decrypt: "+decryptString,"application/json");
+            return Content("encrypt:  " + str + " \n decrypt: " + decryptString, "application/json");
         }
 
     }

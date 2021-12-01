@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -10,13 +8,13 @@ namespace System.Web
     {
         private static Microsoft.AspNetCore.Http.IHttpContextAccessor m_httpContextAccessor;
 
-        private static Microsoft.AspNetCore.Hosting.IHostingEnvironment _hostingEnvironment;
-        public static void Configure(Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor, Microsoft.AspNetCore.Hosting.IHostingEnvironment hostingEnvironment)
+        private static Microsoft.AspNetCore.Hosting.IWebHostEnvironment m_webHostEnvironment;
+
+        public static void Configure(Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor, Microsoft.AspNetCore.Hosting.IWebHostEnvironment webHostEnvironment)
         {
             m_httpContextAccessor = httpContextAccessor;
-            _hostingEnvironment = hostingEnvironment;
+            m_webHostEnvironment = webHostEnvironment;
         }
-
 
         public static Microsoft.AspNetCore.Http.HttpContext Current
         {
@@ -26,14 +24,12 @@ namespace System.Web
             }
         }
 
-        public static IHostingEnvironment HostingEnvironment
+        public static Microsoft.AspNetCore.Hosting.IWebHostEnvironment WebHostEnvironment
         {
-            get { return _hostingEnvironment; }
+            get
+            {
+                return m_webHostEnvironment;
+            }
         }
-
     }
-
-   
-
-   
 }

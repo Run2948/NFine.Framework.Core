@@ -10,13 +10,13 @@ namespace NFine.Scheduler.Jobs
 {
     public class HelloJob: IJob
     {
-        private ILogger<HelloJob> logger;
         //private DutyApp dutyApp;
+
+        private ILogger<HelloJob> logger;
         public HelloJob(ILogger<HelloJob> logger)
         {
             this.logger = logger;
         }
-
 
         public async Task Execute(IJobExecutionContext context)
         {

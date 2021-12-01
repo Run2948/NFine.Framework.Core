@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using System.Web;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace NFine.Code
 {
@@ -14,7 +15,8 @@ namespace NFine.Code
         {
             get { return new OperatorProvider(); }
         }
-        private string LoginUserKey = "nfine_loginuserkey_2016";
+
+        //private string LoginUserKey = "nfine_loginuserkey_2016";
         private string LoginProvider = Configs.GetValue("LoginProvider");
 
         public OperatorModel GetCurrent()
@@ -35,33 +37,23 @@ namespace NFine.Code
         /// </summary>
         /// <param name="operatorModel"></param>
         /// <returns></returns>
-        public async Task  AddCurrent(OperatorModel operatorModel)
+        public async Task AddCurrent(OperatorModel operatorModel)
         {
-            //if (LoginProvider == "Cookie")
-            //{
-            //    WebHelper.WriteCookie(LoginUserKey, DESEncrypt.Encrypt(operatorModel.ToJson()), 60);
-            //}
-            //else
-            //{
-            //    WebHelper.WriteSession(LoginUserKey, DESEncrypt.Encrypt(operatorModel.ToJson()));
-            //}
-            //WebHelper.WriteCookie("nfine_mac", Md5.md5(Net.GetMacByNetworkInterface().ToJson(), 32));
-            //WebHelper.WriteCookie("nfine_licence", Licence.GetLicence());
-
             var principal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
                 new Claim(ClaimTypes.Name, operatorModel.UserId),
                 new Claim("OperatorModel",Newtonsoft.Json.JsonConvert.SerializeObject(operatorModel))
-            }, "IdentityCookieAuthenScheme"));
+            }, CookieAuthenticationDefaults.AuthenticationScheme));
 
-            await HttpContext.Current.SignInAsync("IdentityCookieAuthenScheme", principal, new AuthenticationProperties()
+            await HttpContext.Current.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, new AuthenticationProperties()
             {
                 ExpiresUtc = DateTime.UtcNow.AddMinutes(30)//设置登录的Cookie的有效期时间
             });
 
         }
-        public async Task  RemoveCurrent()
+
+        public async Task RemoveCurrent()
         {
-            await HttpContext.Current.SignOutAsync("IdentityCookieAuthenScheme");
+            await HttpContext.Current.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         }
     }
 }

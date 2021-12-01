@@ -23,7 +23,6 @@ namespace NFine.XUnitTesting
         {
             List<string> list = new List<string>();
             Console.WriteLine("中文");
-            string aaa = "中文信息";
             
             Assert.Empty(list);
         }

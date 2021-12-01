@@ -16,43 +16,44 @@ namespace NFine.Data
     /// </summary>
     public class RepositoryBase : IRepositoryBase
     {
+        private readonly NFineDbContext _dbContext; //= new NFineDbContext();
+        private DbTransaction Transaction { get; set; }
 
         public RepositoryBase(NFineDbContext dbContext)
         {
-            this.dbcontext = dbContext;
+            _dbContext = dbContext;
         }
 
-        private NFineDbContext dbcontext = null; //= new NFineDbContext();
-        private DbTransaction dbTransaction { get; set; }
         public IRepositoryBase BeginTrans()
         {
-
-            DbConnection dbConnection = dbcontext.Database.GetDbConnection();
+            DbConnection dbConnection = _dbContext.Database.GetDbConnection();
             if (dbConnection.State == ConnectionState.Closed)
             {
                 dbConnection.Open();
             }
-            dbTransaction = dbConnection.BeginTransaction();
-            dbcontext.Database.UseTransaction(dbTransaction);
-           return this;
+            Transaction = dbConnection.BeginTransaction();
+            _dbContext.Database.UseTransaction(Transaction);
+            return this;
         }
+
         public int Commit()
         {
             try
             {
-                var returnValue = dbcontext.SaveChanges();
+                var returnValue = _dbContext.SaveChanges();
 
-                if (dbTransaction != null)
+                if (Transaction != null)
                 {
-                    dbTransaction.Commit();
+                    Transaction.Commit();
                 }
                 return returnValue;
             }
-            catch (Exception em)
+            catch (Exception e)
             {
-                if (dbTransaction != null)
+                Console.WriteLine(e);
+                if (Transaction != null)
                 {
-                    this.dbTransaction.Rollback();
+                    this.Transaction.Rollback();
                 }
                 throw;
             }
@@ -61,104 +62,118 @@ namespace NFine.Data
                 this.Dispose();
             }
         }
+
         public void Dispose()
         {
-            if (dbTransaction != null)
+            if (Transaction != null)
             {
-                this.dbTransaction.Dispose();
+                this.Transaction.Dispose();
             }
-            this.dbcontext.Dispose();
+            _dbContext.Dispose();
         }
+
         public int Insert<TEntity>(TEntity entity) where TEntity : class
         {
-            dbcontext.Entry<TEntity>(entity).State = EntityState.Added;
-            return dbTransaction == null ? this.Commit() : 0;
+            _dbContext.Entry<TEntity>(entity).State = EntityState.Added;
+            return Transaction == null ? this.Commit() : 0;
         }
+
         public int Insert<TEntity>(List<TEntity> entitys) where TEntity : class
         {
             foreach (var entity in entitys)
             {
-                dbcontext.Entry<TEntity>(entity).State = EntityState.Added;
+                _dbContext.Entry<TEntity>(entity).State = EntityState.Added;
             }
-            return dbTransaction == null ? this.Commit() : 0;
+            return Transaction == null ? this.Commit() : 0;
         }
+
         public int Update<TEntity>(TEntity entity) where TEntity : class
         {
-            dbcontext.Set<TEntity>().Attach(entity);
+            _dbContext.Set<TEntity>().Attach(entity);
             PropertyInfo[] props = entity.GetType().GetProperties();
             foreach (PropertyInfo prop in props)
             {
                 if (prop.GetValue(entity, null) != null)
                 {
                     if (prop.GetValue(entity, null).ToString() == "&nbsp;")
-                        dbcontext.Entry(entity).Property(prop.Name).CurrentValue = null;
+                        _dbContext.Entry(entity).Property(prop.Name).CurrentValue = null;
                     if (!prop.Name.Equals("F_Id"))
-                        dbcontext.Entry(entity).Property(prop.Name).IsModified = true;
+                        _dbContext.Entry(entity).Property(prop.Name).IsModified = true;
                 }
             }
-           // dbcontext.Entry<TEntity>(entity).State = EntityState.Modified;
-            return dbTransaction == null ? this.Commit() : 0;
+            return Transaction == null ? this.Commit() : 0;
         }
+
         public int Delete<TEntity>(TEntity entity) where TEntity : class
         {
-            dbcontext.Set<TEntity>().Attach(entity);
+            _dbContext.Set<TEntity>().Attach(entity);
             PropertyInfo prop = entity.GetType().GetProperty("F_DeleteMark");
-            prop.SetValue(entity, true);
-            dbcontext.Entry(entity).State = EntityState.Modified;
-            return dbTransaction == null ? this.Commit() : 0;
-            //dbcontext.Set<TEntity>().Attach(entity);
-            //dbcontext.Entry<TEntity>(entity).State = EntityState.Deleted;
-            //return dbTransaction == null ? this.Commit() : 0;
+            if (prop != null)
+            {
+                prop.SetValue(entity, true);
+                _dbContext.Entry(entity).State = EntityState.Modified;
+            }
+            else
+            {
+                _dbContext.Entry<TEntity>(entity).State = EntityState.Deleted;
+            }
+            return Transaction == null ? this.Commit() : 0;
         }
+
         public int Delete<TEntity>(Expression<Func<TEntity, bool>> predicate) where TEntity : class
         {
-            var entitys = dbcontext.Set<TEntity>().Where(predicate)?.ToList();
+            var entitys = _dbContext.Set<TEntity>().Where(predicate)?.ToList();
             entitys?.ForEach(m =>
             {
                 PropertyInfo prop = m.GetType().GetProperty("F_DeleteMark");
                 if (prop != null)
                 {
                     prop.SetValue(m, true);
-                    dbcontext.Entry<TEntity>(m).State = EntityState.Modified;
+                    _dbContext.Entry<TEntity>(m).State = EntityState.Modified;
+                }
+                else
+                {
+                    _dbContext.Entry<TEntity>(m).State = EntityState.Deleted;
                 }
             });
-            return dbTransaction == null ? this.Commit() : 0;
-            //var entitys = dbcontext.Set<TEntity>().Where(predicate)?.ToList();
-            //entitys?.ForEach(m => dbcontext.Entry<TEntity>(m).State = EntityState.Deleted);
-            //return dbTransaction == null ? this.Commit() : 0;
+            return Transaction == null ? this.Commit() : 0;
         }
+
         public TEntity FindEntity<TEntity>(object keyValue) where TEntity : class
         {
-            return dbcontext.Set<TEntity>().Find(keyValue);
+            return _dbContext.Set<TEntity>().Find(keyValue);
         }
+
         public TEntity FindEntity<TEntity>(Expression<Func<TEntity, bool>> predicate) where TEntity : class
         {
-            return dbcontext.Set<TEntity>().FirstOrDefault(predicate);
+            return _dbContext.Set<TEntity>().FirstOrDefault(predicate);
         }
+
         public IQueryable<TEntity> IQueryable<TEntity>() where TEntity : class
         {
-            return dbcontext.Set<TEntity>();
+            return _dbContext.Set<TEntity>();
         }
+
         public IQueryable<TEntity> IQueryable<TEntity>(Expression<Func<TEntity, bool>> predicate) where TEntity : class
         {
-            return dbcontext.Set<TEntity>().Where(predicate);
+            return _dbContext.Set<TEntity>().Where(predicate);
         }
         public List<TEntity> FindList<TEntity>(string strSql) where TEntity : class
         {
-            //return dbcontext.Database.SqlQuery<TEntity>(strSql).<TEntity>();
-            return dbcontext.Set<TEntity>().FromSql(strSql).ToList<TEntity>();
+            return _dbContext.Set<TEntity>().FromSqlRaw(strSql).ToList<TEntity>();
         }
+
         public List<TEntity> FindList<TEntity>(string strSql, DbParameter[] dbParameter) where TEntity : class
         {
-            //return dbcontext.Database.SqlQuery<TEntity>(strSql, dbParameter).ToList<TEntity>();
-            return dbcontext.Set<TEntity>().FromSql(strSql).ToList<TEntity>();
+            return _dbContext.Set<TEntity>().FromSqlRaw(strSql).ToList<TEntity>();
         }
-        public List<TEntity> FindList<TEntity>(Pagination pagination) where TEntity : class,new()
+
+        public List<TEntity> FindList<TEntity>(Pagination pagination) where TEntity : class, new()
         {
             bool isAsc = pagination.sord.ToLower() == "asc" ? true : false;
             string[] _order = pagination.sidx.Split(',');
             MethodCallExpression resultExp = null;
-            var tempData = dbcontext.Set<TEntity>().AsQueryable();
+            var tempData = _dbContext.Set<TEntity>().AsQueryable();
             foreach (string item in _order)
             {
                 string _orderPart = item;
@@ -181,12 +196,13 @@ namespace NFine.Data
             tempData = tempData.Skip<TEntity>(pagination.rows * (pagination.page - 1)).Take<TEntity>(pagination.rows).AsQueryable();
             return tempData.ToList();
         }
-        public List<TEntity> FindList<TEntity>(Expression<Func<TEntity, bool>> predicate, Pagination pagination) where TEntity : class,new()
+
+        public List<TEntity> FindList<TEntity>(Expression<Func<TEntity, bool>> predicate, Pagination pagination) where TEntity : class, new()
         {
             bool isAsc = pagination.sord.ToLower() == "asc" ? true : false;
             string[] _order = pagination.sidx.Split(',');
             MethodCallExpression resultExp = null;
-            var tempData = dbcontext.Set<TEntity>().Where(predicate);
+            var tempData = _dbContext.Set<TEntity>().Where(predicate);
             foreach (string item in _order)
             {
                 string _orderPart = item;

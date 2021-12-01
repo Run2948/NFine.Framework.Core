@@ -28,7 +28,7 @@ namespace NFine.Code
             if (relativeUrl.Contains("://"))
                 return relativeUrl;
             throw new Exception("未实现");
-           // return  VirtualPathUtility.ToAbsolute(relativeUrl);
+            // return  VirtualPathUtility.ToAbsolute(relativeUrl);
         }
 
         #endregion
@@ -141,7 +141,7 @@ namespace NFine.Code
             }
             else
                 json = value.ToJson();
-           
+
             HttpContext.Current.Session.Set(key, System.Text.Encoding.UTF8.GetBytes(json));
         }
 
@@ -166,7 +166,7 @@ namespace NFine.Code
 
             if (HttpContext.Current.Session.TryGetValue(key, out byte[] bytes))
                 return System.Text.Encoding.UTF8.GetString(bytes);
-           
+
             return string.Empty;
 
         }
@@ -201,7 +201,7 @@ namespace NFine.Code
         /// <param name="strValue">过期时间(分钟)</param>
         public static void WriteCookie(string strName, string strValue, int expires)
         {
-            HttpContext.Current.Response.Cookies.Append(strName,strName,new Microsoft.AspNetCore.Http.CookieOptions() { Expires =  DateTime.Now.AddMinutes(expires) });
+            HttpContext.Current.Response.Cookies.Append(strName, strValue, new Microsoft.AspNetCore.Http.CookieOptions() { Expires = DateTime.Now.AddMinutes(expires) });
         }
         /// <summary>
         /// 读cookie值
@@ -325,7 +325,7 @@ namespace NFine.Code
             Htmlstring = Regex.Replace(Htmlstring, @"&rdquo;", "", RegexOptions.IgnoreCase);
             Htmlstring.Replace(">", "");
             Htmlstring.Replace("\r\n", "");
-            
+
             Htmlstring = HtmlEncode(Htmlstring).Trim();
             return Htmlstring;
 

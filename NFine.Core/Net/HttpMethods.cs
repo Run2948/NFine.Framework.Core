@@ -133,6 +133,7 @@ namespace NFine.Code
             }
             catch (WebException e)
             {
+                Console.WriteLine(e);
                 //LogResult(e.Message);
                 return "";
             }
@@ -429,6 +430,7 @@ namespace NFine.Code
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 //logger.Error("Error uploading file", ex);
                 if (wresp != null)
                 {
@@ -495,6 +497,7 @@ namespace NFine.Code
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 //logger.Error("Error uploading file", ex);
                 if (wresp != null)
                 {

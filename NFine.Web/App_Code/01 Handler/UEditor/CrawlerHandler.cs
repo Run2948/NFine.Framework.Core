@@ -74,7 +74,7 @@ public class Crawler
                 return this;
             }
             ServerUrl = PathFormatter.Format(Path.GetFileName(this.SourceUrl), Config.GetString("catcherPathFormat"));
-            var savePath = HttpContext.HostingEnvironment.ContentRootPath + ServerUrl;
+            var savePath = HttpContext.WebHostEnvironment.ContentRootPath + ServerUrl;
             if (!Directory.Exists(Path.GetDirectoryName(savePath)))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(savePath));
@@ -114,7 +114,7 @@ public class Crawler
                 var ipHostEntry = Dns.GetHostEntry(uri.DnsSafeHost);
                 foreach (IPAddress ipAddress in ipHostEntry.AddressList)
                 {
-                    byte[] ipBytes = ipAddress.GetAddressBytes();
+                    //byte[] ipBytes = ipAddress.GetAddressBytes();
                     if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
                     {
                         if (!IsPrivateIP(ipAddress))

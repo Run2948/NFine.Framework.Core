@@ -8,17 +8,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using NFine.Data;
-using System.IO;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace NFine.Web
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IWebHostEnvironment env)
         {
-           // System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+            // System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -34,7 +35,8 @@ namespace NFine.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            IMvcBuilder mvcBuilder = services.AddMvc();
+            IMvcBuilder mvcBuilder = services.AddControllersWithViews();
+
             services.AddSingleton<Microsoft.AspNetCore.Http.IHttpContextAccessor, Microsoft.AspNetCore.Http.HttpContextAccessor>();
             services.AddSession(options =>
             {
@@ -48,19 +50,20 @@ namespace NFine.Web
                 options.ViewLocationExpanders.Add(new NamespaceViewLocationExpander());
             });
 
-            services.AddAuthentication("IdentityCookieAuthenScheme").AddCookie("IdentityCookieAuthenScheme",options =>
-            {
-                options.LoginPath = "/Login/Index";
-                options.Cookie.Name = "AuthCookie";
-            });
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+             {
+                 options.LoginPath = "/Login/Index";
+                 options.Cookie.Name = "AuthCookie";
+             });
+
             services.AddDbContextPool<NFineDbContext>(optionsAction =>
             {
-                optionsAction.UseSqlServer(Configuration.GetSection("connectionStrings:NFineDbContext").Value, options => options.UseRowNumberForPaging());
-#if DEBUG
-                optionsAction.ConfigureWarnings(warningsConfigurationBuilderAction => warningsConfigurationBuilderAction.Throw(RelationalEventId.QueryClientEvaluationWarning));
-#endif
+                optionsAction.UseSqlServer(Configuration.GetConnectionString("NFineDbContext"));
             });
+
             services.AddScoped<IRepositoryBase, RepositoryBase>();
+
             #region 注入repositorybase类
             Assembly asm = System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName("NFine.Repository"));
             var typesToRegister = asm.GetTypes()
@@ -87,9 +90,8 @@ namespace NFine.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-           
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -101,7 +103,7 @@ namespace NFine.Web
             }
 
             ///注册全局先上问关联的HttpContext
-            System.Web.HttpContext.Configure(app.ApplicationServices.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>(),env);
+            System.Web.HttpContext.Configure(app.ApplicationServices.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>(), env);
 
             //注册全局Configuration对象
             NFine.Code.ConfigurationManager.Configure(Configuration);
@@ -110,29 +112,32 @@ namespace NFine.Web
 
             app.UseStaticFiles();
 
+            app.UseRouting();
+
             app.UseAuthentication();
+            app.UseAuthorization();
 
-            app.UseMvc(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
 
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "ExampleManage",
-                    template: "ExampleManage/{controller}/{action=Index}/{id?}");
+                    pattern: "ExampleManage/{controller}/{action=Index}/{id?}");
 
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "ReportManage",
-                    template: "ReportManage/{controller}/{action=Index}/{id?}");
+                    pattern: "ReportManage/{controller}/{action=Index}/{id?}");
 
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                   name: "SystemManage",
-                  template: "SystemManage/{controller}/{action=Index}/{id?}");
+                  pattern: "SystemManage/{controller}/{action=Index}/{id?}");
 
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                  name: "SystemSecurity",
-                 template: "SystemSecurity/{controller}/{action=Index}/{id?}");
+                 pattern: "SystemSecurity/{controller}/{action=Index}/{id?}");
             });
         }
     }

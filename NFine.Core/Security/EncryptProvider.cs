@@ -255,6 +255,7 @@ namespace NFine.Code
                         }
                         catch (Exception ex)
                         {
+                            Console.WriteLine(ex);
                             return null;
                         }
                     }
@@ -301,6 +302,7 @@ namespace NFine.Code
                         }
                         catch (Exception ex)
                         {
+                            Console.WriteLine(ex);
                             return null;
                         }
                     }
@@ -397,6 +399,7 @@ namespace NFine.Code
                         }
                         catch (Exception ex)
                         {
+                            Console.WriteLine(ex);
                             return null;
                         }
                     }
